@@ -3,15 +3,18 @@ from arduino_bridge import *
 
 import cv2
 import numpy as np
+import imageio
+import time
+
 from matplotlib import pyplot as plt
 
 
 def color_filter_hsv(img):
     """ HSV Color Filter"""
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    hue = [0, 75]
-    saturation = [0, 100]
-    value = [150, 255]
+    hue = [0, 87]
+    saturation = [0, 80]
+    value = [180, 255]
     lower_white = np.array([hue[0],saturation[0],value[0]], dtype = "uint8")
     upper_white = np.array([hue[1],saturation[1],value[1]], dtype = "uint8")
 
@@ -66,7 +69,7 @@ def erode_dilate(bin_img):
     return erosion
 
 
-def blur(img):
+def blurrer(img):
     """keep this kernel above a pixel,
     add all the 25 pixels below this kernel,
     take its average and replace the central pixel with the new average value.
@@ -94,73 +97,86 @@ def hough_line_transform(edges):
         3/10 to 5/10 [Left Lane]
         7/10 to 9/10 [Right Lane]
     """
-    height, width = img.shape[:2]
-    L1 = int((1/10)*width)
-    L2 = int((3/10)*width)
-    M = int((1 / 2) * width)
-    R1 = int((7/10)*width)
-    R2 = int((9/10)*width)
-    cv2.line(img, (M, 0), (M, height), (0, 255, 0), 3, 16)
+    if lines is not None:
+        height, width = img.shape[:2]
+        L1 = int((1/10)*width)
+        L2 = int((3/10)*width)
+        M = int((1 / 2) * width)
+        R1 = int((7/10)*width)
+        R2 = int((9/10)*width)
+        cv2.line(img, (M, 0), (M, height), (0, 255, 0), 3, 16)
 
-    cv2.line(img, (L1, 0),(L1, height), (255, 0, 0), 3, 16)
-    cv2.line(img, (L2, 0),(L2, height), (255, 0, 0), 3, 16)
-    cv2.line(img, (R1, 0),(R1, height), (255, 0, 0), 3, 16)
-    cv2.line(img, (R2, 0),(R2, height), (255, 0, 0), 3, 16)
+        cv2.line(img, (L1, 0),(L1, height), (255, 0, 0), 3, 16)
+        cv2.line(img, (L2, 0),(L2, height), (255, 0, 0), 3, 16)
+        cv2.line(img, (R1, 0),(R1, height), (255, 0, 0), 3, 16)
+        cv2.line(img, (R2, 0),(R2, height), (255, 0, 0), 3, 16)
 
-    # Find the distance a line is away if detected from its should be position and
-    # draw that distance.
-    a, b, c = lines.shape
-    for i in range(a):
-        width1 = lines[i][0][0]
-        width2 = lines[i][0][2]
-        height1 = lines[i][0][1]
-        height2 = lines[i][0][3]
-        avg_width = int((width1+width2)/2)
-        avg_height = int((height1 + height2)/2)
+        # Find the distance a line is away if detected from its should be position and
+        # draw that distance.
+        a, b, c = lines.shape
+        for i in range(a):
+            width1 = lines[i][0][0]
+            width2 = lines[i][0][2]
+            height1 = lines[i][0][1]
+            height2 = lines[i][0][3]
+            avg_width = int((width1+width2)/2)
+            avg_height = int((height1 + height2)/2)
 
-        total_distance = 0
+            total_distance = 0
 
-        if avg_width < L1:
-            cv2.line(img, (avg_width, avg_height), (L1, avg_height), (0, 0, 0), 3)
-            total_distance = total_distance - (L1 - avg_width)
-        elif L2<avg_width<M:
-            cv2.line(img, (avg_width, avg_height), (L2, avg_height), (0, 0, 0), 3)
-            total_distance = total_distance - (avg_width - L2)
-        elif M<avg_width<R1:
-            cv2.line(img, (avg_width, avg_height), (R1, avg_height), (0, 0, 0), 3)
-            total_distance = total_distance + (R1 - avg_width)
-        elif avg_width > R2:
-            cv2.line(img, (avg_width, avg_height), (R2, avg_height), (0, 0, 0), 3)
-            total_distance = total_distance + (avg_width - R2)
+            if avg_width < L1:
+                cv2.line(img, (avg_width, avg_height), (L1, avg_height), (0, 0, 0), 3)
+                total_distance = total_distance - (L1 - avg_width)
+            elif L2<avg_width<M:
+                cv2.line(img, (avg_width, avg_height), (L2, avg_height), (0, 0, 0), 3)
+                total_distance = total_distance - (avg_width - L2)
+            elif M<avg_width<R1:
+                cv2.line(img, (avg_width, avg_height), (R1, avg_height), (0, 0, 0), 3)
+                total_distance = total_distance + (R1 - avg_width)
+            elif avg_width > R2:
+                cv2.line(img, (avg_width, avg_height), (R2, avg_height), (0, 0, 0), 3)
+                total_distance = total_distance + (avg_width - R2)
 
-    # Draw the lines themselves.
-    for i in range(a):
-        point1 = (lines[i][0][0], lines[i][0][1])
-        point2 = (lines[i][0][2], lines[i][0][3])
+        # Draw the lines themselves.
+        for i in range(a):
+            point1 = (lines[i][0][0], lines[i][0][1])
+            point2 = (lines[i][0][2], lines[i][0][3])
 
-        cv2.line(img, point1, point2, (0, 0, 255), 3, cv2.LINE_AA)
+            cv2.line(img, point1, point2, (0, 0, 255), 3, cv2.LINE_AA)
 
-    # 1/5 the width because that is worst case scenario
-    text = "Travel: " + str(total_distance/((1/5)*width))
+        # 1/5 the width because that is worst case scenario
+        text = "Travel: " + str(total_distance/((1/5)*width))
 
-    # Print out movement on the image.
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(img, text, (10, height - 10), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
+        # Print out movement on the image.
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(img, text, (10, height - 10), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
-    cv2.imwrite('assets/houghlines75.jpg', img)
+        filename = "assets/images/test/houghlines_2_" + str(idx) + ".jpg"
+        print "INDEX: ", idx
+        cv2.imwrite(filename, img)
 
-    return total_distance/((1/5)*width)
+        return total_distance/((1/5)*width)
+    else:
+        return 0
 
 if __name__ == '__main__':
-    # TODO: Figure out how to do this frame by frame for a video
-    img = cv2.imread('assets/images/t6.png')
+    # img = cv2.imread('assets/images/t6.png')
 
-    cap = cv2.VideoCapture("assets/videos/Video_1.mp4")
-    blur = blur(img)
-    res = color_filter_hsv(blur)
-    bin_img = erode_dilate(res)
-    edges = canny_edge_detection(bin_img)
-    floater = hough_line_transform(edges)
+    filename = '/home/agoel/git/lane-follow-bot/assets/videos/Video_1.mp4'
+    vid = imageio.get_reader(filename, 'ffmpeg')
+    len = vid.get_meta_data()
+    frames = len['nframes']
+    idx = 1
 
-    send_data(floater)
-
+    while idx < frames:
+        img = vid.get_data(idx)
+        blur = blurrer(img)
+        res = color_filter_hsv(blur)
+        bin_img = erode_dilate(res)
+        edges = canny_edge_detection(bin_img)
+        floater = hough_line_transform(edges)
+        print(floater)
+        send_data(floater)
+        time.sleep(1)
+        idx += 100
+    close()

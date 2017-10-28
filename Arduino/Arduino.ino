@@ -44,7 +44,7 @@ void loop() {
   curMillis = millis(); //// Returns the number of milliseconds since the Arduino board began running the current program.
   getDataFromPC();
   updateFlashInterval();
-  replyToPC();
+//  replyToPC();
 }
 
 //=============
