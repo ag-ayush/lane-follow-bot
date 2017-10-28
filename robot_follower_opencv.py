@@ -151,9 +151,9 @@ def hough_line_transform(edges):
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(img, text, (10, height - 10), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
-        filename = "assets/images/test/houghlines_2_" + str(idx) + ".jpg"
+        # filename = "assets/images/test/houghlines_2_" + str(idx) + ".jpg"
         print "INDEX: ", idx
-        cv2.imwrite(filename, img)
+        # cv2.imwrite(filename, img)
 
         return total_distance/((1/5)*width)
     else:
@@ -168,6 +168,8 @@ if __name__ == '__main__':
     frames = len['nframes']
     idx = 1
 
+    # time to hold down the reset button, this is a to be fixed bug...
+    time.sleep(5)
     while idx < frames:
         img = vid.get_data(idx)
         blur = blurrer(img)
@@ -175,8 +177,6 @@ if __name__ == '__main__':
         bin_img = erode_dilate(res)
         edges = canny_edge_detection(bin_img)
         floater = hough_line_transform(edges)
-        print(floater)
         send_data(floater)
-        time.sleep(1)
-        idx += 100
+        idx += 2
     close()

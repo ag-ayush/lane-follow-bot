@@ -10,12 +10,13 @@ def close():
     ser.close
 
 def send_data(floater):
-
+    # print(ser)
     if floater < -0.1:
         data = ("<LEFT," + str(abs(floater)) + ">")
     elif floater > 0.1:
         data = ("<RIGHT," + str(abs(floater)) + ">")
     else:
         data = ("<STRAIGHT, 0>")
+
     ser.write(data)
     print "Sent from PC -- LOOP NUM TEST STR " + data

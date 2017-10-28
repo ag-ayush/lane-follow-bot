@@ -28,14 +28,10 @@ void setup() {
     //If the pin has been configured as an OUTPUT with pinMode(), its voltage will be set to the corresponding value: 5V for HIGH, 0V for LOW.
     digitalWrite(ledPin[n], HIGH);
   }
-  delay(500); // delay() is OK in setup as it only happens once
-
+  delay(500);
   for (byte n = 0; n < numLEDs; n++) {
     digitalWrite(ledPin[n], LOW);
   }
-
-  // tell the PC we are ready
-  Serial.println("<Arduino is ready>");
 }
 
 //=============
@@ -44,7 +40,6 @@ void loop() {
   curMillis = millis(); //// Returns the number of milliseconds since the Arduino board began running the current program.
   getDataFromPC();
   updateFlashInterval();
-//  replyToPC();
 }
 
 //=============
@@ -60,14 +55,13 @@ void getDataFromPC() {
   if (Serial.available() > 0) {
 
     char x = Serial.read();
-
+    
     if (x == endMarker) {
       readInProgress = false;
       newDataFromPC = true;
       inputBuffer[bytesRecvd] = 0;
       parseData();
     }
-
     if (readInProgress) {
       inputBuffer[bytesRecvd] = x;
       bytesRecvd ++;
@@ -99,35 +93,19 @@ void parseData() {
 
 }
 
-//=============
-
-void replyToPC() {
-
-  if (newDataFromPC) {
-    newDataFromPC = false;
-    Serial.print("<Msg ");
-    Serial.print(messageFromPC);
-    Serial.print(" Movement ");
-    Serial.print(movement);
-    Serial.print(" Time ");
-    Serial.print(curMillis >> 9); // divide by 512 is approx = half-seconds
-    Serial.println(">");
-  }
-}
-
 //============
 
 void updateFlashInterval() {
   // this illustrates using different inputs to call different functions
   if (strcmp(messageFromPC, "LEFT") == 0) {
     analogWrite(ledPin[0], 255 * movement);
-    delay(10);
+    delay(15);
     analogWrite(ledPin[0], 0);
   }
 
   if (strcmp(messageFromPC, "RIGHT") == 0) {
     analogWrite(ledPin[1], 255 * movement);
-    delay(10);
+    delay(15);
     analogWrite(ledPin[1], 0);
   }
 
