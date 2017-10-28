@@ -12,7 +12,7 @@ Takes an image and does the following:
 4. Canny Edge Detection
 5. Hough Line Transform P
 
-##Python-Arduino Bridge
+## Python-Arduino Bridge
 This file takes a value between -1 and 1, where -1 is left and 1 is right. Currently it has a threshold between -0.1 and 0.1 for going straight (no LEDs on).
 
 The file outputs to Arduino serial in form of a string: `<direction, float>` where direction is either RIGHT, LEFT, or STRAIGHT and float is the value to turn between 0 and 1.
