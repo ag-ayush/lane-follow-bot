@@ -52,7 +52,7 @@ def runTest(td):
 
         teststr = td[n]
 
-        if waitingForReply == True:
+        if waitingForReply:
 
             while ser.inWaiting() == 0:
                 pass
@@ -73,44 +73,52 @@ def runTest(td):
 import random
 
 def send_data(floater):
+    waitingForReply = False
+
     if floater < -0.1:
-        printData.append("<LEFT," + str(abs(floater)) + ">")
+        data = ("<LEFT," + str(abs(floater)) + ">")
+    elif floater > 0.1:
+        data = ("<RIGHT," + str(abs(floater)) + ">")
+    else:
+        data = ("<STRAIGHT, 0>")
+    for n in range(2):
+        if waitingForReply:
+            while ser.inWaiting() == 0:
+                pass
+            dataRecvd = recvFromArduino()
+            print "Reply Received  " + dataRecvd
+            waitingForReply = False
+            print "==========="
+        else:
+            sendToArduino(data)
+            print "Sent from PC -- LOOP NUM " + str(n) + " TEST STR " + data
+            waitingForReply = True
+
+
+serPort = "/dev/ttyACM0"
+baudRate = 9600
+ser = serial.Serial(serPort, baudRate)
+print "Serial port " + serPort + " opened  Baudrate " + str(baudRate)
+
+startMarker = 60    # ord('<')
+endMarker = 62      # ord('>')
+
+waitForArduino()
+
+testData = []
+for n in range(100):
+    testData.append(random.uniform(-1, 1))
+
+printData = []
+testData.sort()
+for data in testData:
+    if data < -0.1:
+        printData.append("<LEFT," + str(abs(data)) + ">")
     elif data > 0.1:
-        printData.append("<RIGHT," + str(abs(floater)) + ">")
+        printData.append("<RIGHT," + str(abs(data)) + ">")
     else:
         printData.append("<STRAIGHT, 0>")
 
-if __name__ == '__main__':
+printData.append("<STRAIGHT, 0>")
 
-    # TODO: Remove testing, and input looping.
-    print
-
-    serPort = "/dev/ttyACM0"
-    baudRate = 9600
-    ser = serial.Serial(serPort, baudRate)
-    print "Serial port " + serPort + " opened  Baudrate " + str(baudRate)
-
-    startMarker = 60    # ord('<')
-    endMarker = 62      # ord('>')
-
-    waitForArduino()
-
-    testData = []
-    for n in range(100):
-        testData.append(random.uniform(-1, 1))
-
-    printData = []
-    testData.sort()
-    for data in testData:
-        if data < -0.1:
-            printData.append("<LEFT," + str(abs(data)) + ">")
-        elif data > 0.1:
-            printData.append("<RIGHT," + str(abs(data)) + ">")
-        else:
-            printData.append("<STRAIGHT, 0>")
-
-    printData.append("<STRAIGHT, 0>")
-
-    runTest(printData)
-
-    ser.close
+ser.close
