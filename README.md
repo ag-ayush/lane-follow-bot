@@ -19,7 +19,7 @@ The file outputs to Arduino serial in form of a string: `<direction, float>` whe
 
 _It should be noted that serial port and baud rate are hard coded, and will need to be changed for other boards._
 
-## Arduiono
+## Arduino
 The Arduino file looks for the message from PC, decodes it, and turns on LED based on the motor output (0 to 1, where 0 is off and 1 is full power).
 
 ## Hardward and Software
